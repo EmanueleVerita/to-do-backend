@@ -1,4 +1,28 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Patch } from '@nestjs/common';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
-export class TasksController {}
+export class TasksController {
+  constructor(private readonly tasksService: TasksService) {}
+
+  @Get()
+  getAll() {
+    return this.tasksService.findAll();
+  }
+
+  @Post()
+  create(@Body('title') title: string) {
+    return this.tasksService.create(title);
+  }
+
+  @Patch(':id')
+  toggleCompleted(@Param('id') id: string) {
+    return this.tasksService.toggleCompleted(+id);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    this.tasksService.delete(+id);
+    return { message: 'Task deleted' };
+  }
+}
