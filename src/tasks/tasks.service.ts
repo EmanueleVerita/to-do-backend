@@ -1,34 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { Task } from './task.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Task } from './task.entity';
 
 @Injectable()
 export class TasksService {
-  private tasks: Task[] = [];
-  private idCounter = 1;
+  constructor(
+    @InjectRepository(Task)
+    private taskRepo: Repository<Task>,
+  ) {}
 
-  findAll(): Task[] {
-    return this.tasks;
+  create(title: string): Promise<Task> {
+    const task = this.taskRepo.create({ title });
+    return this.taskRepo.save(task);
   }
 
-  create(title: string): Task {
-    const newTask: Task = {
-      id: this.idCounter++,
-      title,
-      completed: false,
-    };
-    this.tasks.push(newTask);
-    return newTask;
+  findAll(): Promise<Task[]> {
+    return this.taskRepo.find();
   }
 
-  toggleCompleted(id: number): Task | undefined {
-    const task = this.tasks.find(t => t.id === id);
-    if (task) {
-      task.completed = !task.completed;
-    }
-    return task;
+  async toggle(id: number): Promise<Task> {
+    const task = await this.taskRepo.findOneBy({ id });
+    if (!task) throw new Error('Task not found');
+    task.completed = !task.completed;
+    return this.taskRepo.save(task);
   }
 
-  delete(id: number): void {
-    this.tasks = this.tasks.filter(t => t.id !== id);
+  async delete(id: number): Promise<void> {
+    await this.taskRepo.delete(id);
   }
 }

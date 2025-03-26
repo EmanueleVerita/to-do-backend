@@ -17,7 +17,7 @@ export class TasksController {
 
   @Patch(':id')
   toggleCompleted(@Param('id') id: string) {
-    return this.tasksService.toggleCompleted(+id);
+    return this.tasksService.toggle(+id);
   }
 
   @Delete(':id')
